@@ -16,7 +16,7 @@ npm run dev          # http://localhost:3000
 ## Проверки
 
 ```sh
-npx tsc --noEmit     # типы
+npm run typecheck    # типы (сначала next typegen, затем tsc)
 npm run lint         # ESLint
 ```
 
