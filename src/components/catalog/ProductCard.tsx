@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import { useFormat, useI18n } from "@/components/I18n";
 import { AnimatePresence, m } from "motion/react";
 import { useId, useRef, useState } from "react";
 import { photo } from "@/data/photos";
 import type { Product, Size } from "@/data/types";
-import { discountPercent, formatPrice } from "@/lib/format";
+import { discountPercent } from "@/lib/format";
 import { useCatalog } from "@/store/catalog";
 import { useAddToCart } from "@/components/cart/useAddToCart";
 import { CareIcons } from "@/components/ui/CareIcons";
@@ -15,18 +16,21 @@ import { Icon } from "@/components/ui/Icon";
 export const defaultSize = (p: Product): Size => (p.variants.find((v) => v.size === "M") ?? p.variants[0]).size;
 
 export function Badges({ product, size }: { product: Product; size: Size }) {
+  const t = useI18n().t.card;
   const v = product.variants.find((x) => x.size === size)!;
   const off = discountPercent(v.price, v.oldPrice);
   return (
     <div className="pointer-events-none absolute top-3 left-3 z-10 flex flex-col items-start gap-1.5">
-      {product.badges.includes("hit") && <span className="sticker -rotate-6 bg-butter text-ink">Хіт</span>}
-      {product.badges.includes("new") && <span className="sticker rotate-3 bg-sage text-forest">Новинка</span>}
+      {product.badges.includes("hit") && <span className="sticker -rotate-6 bg-butter text-ink">{t.hit}</span>}
+      {product.badges.includes("new") && <span className="sticker rotate-3 bg-sage text-forest">{t.new}</span>}
       {off > 0 && <span className="sticker -rotate-3 bg-coral text-ink">−{off}%</span>}
     </div>
   );
 }
 
 export function ProductCard({ product }: { product: Product }) {
+  const t = useI18n().t.card;
+  const { formatPrice } = useFormat();
   const id = useId();
   const [size, setSize] = useState<Size>(defaultSize(product));
   const [hovered, setHovered] = useState(false);
@@ -67,15 +71,15 @@ export function ProductCard({ product }: { product: Product }) {
         )}
         <Badges product={product} size={size} />
         {product.stock === "low" && (
-          <span className="sticker absolute right-3 bottom-3 z-10 rotate-2 bg-cream text-coral-deep">Залишилось мало</span>
+          <span className="sticker absolute right-3 bottom-3 z-10 rotate-2 bg-cream text-coral-deep">{t.low}</span>
         )}
         <button
           type="button"
           onClick={() => openQuickView(product.id)}
           className="absolute inset-x-3 bottom-3 z-10 translate-y-2 rounded-full bg-milk/95 py-2.5 text-sm font-extrabold text-forest opacity-0 shadow-[var(--shadow-sticker)] transition duration-300 group-hover:translate-y-0 group-hover:opacity-100 focus-visible:translate-y-0 focus-visible:opacity-100 max-md:sr-only max-md:focus:not-sr-only"
-          aria-label={`Швидкий перегляд: ${product.name}`}
+          aria-label={t.quickAria(product.name)}
         >
-          Швидкий перегляд
+          {t.quick}
         </button>
       </div>
 
@@ -97,7 +101,7 @@ export function ProductCard({ product }: { product: Product }) {
         <div className="mt-auto pt-4">
           {product.variants.length > 1 ? (
             <fieldset>
-              <legend className="sr-only">Розмір</legend>
+              <legend className="sr-only">{t.size}</legend>
               <div className="flex flex-wrap gap-1.5">
                 {product.variants.map((x) => (
                   <label key={x.size} className="size-chip" title={x.label}>
@@ -124,12 +128,12 @@ export function ProductCard({ product }: { product: Product }) {
             <p className="leading-none">
               {v.oldPrice && (
                 <span className="mb-1 block text-sm text-muted line-through">
-                  <span className="sr-only">Стара ціна: </span>
+                  <span className="sr-only">{t.oldPrice}</span>
                   {formatPrice(v.oldPrice)}
                 </span>
               )}
               <span className={`text-xl font-black ${v.oldPrice ? "text-coral-deep" : ""}`}>
-                {v.oldPrice && <span className="sr-only">Нова ціна: </span>}
+                {v.oldPrice && <span className="sr-only">{t.newPrice}</span>}
                 {formatPrice(v.price)}
               </span>
             </p>
@@ -137,12 +141,12 @@ export function ProductCard({ product }: { product: Product }) {
               type="button"
               disabled={out}
               onClick={() => {
-                addToCart({ id: product.id, size, name: product.name, sizeLabel: `розмір ${size}`, photo: product.photos[0], from: media.current });
+                addToCart({ id: product.id, size, name: product.name, sizeLabel: t.sizeLabel(size), photo: product.photos[0], from: media.current });
                 setAdded(true);
                 setTimeout(() => setAdded(false), 1400);
               }}
               className="btn btn-coral relative h-11 min-w-[8.5rem] overflow-hidden px-4 text-[0.95rem]"
-              aria-label={out ? `${product.name}: немає в наявності` : `У кошик: ${product.name}, розмір ${size}`}
+              aria-label={out ? t.outAria(product.name) : t.addAria(product.name, size)}
             >
               <AnimatePresence mode="popLayout" initial={false}>
                 <m.span
@@ -154,14 +158,14 @@ export function ProductCard({ product }: { product: Product }) {
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 >
                   {out ? (
-                    "Немає"
+                    t.out
                   ) : added ? (
                     <>
-                      <Icon name="check" size={18} /> Додано
+                      <Icon name="check" size={18} /> {t.added}
                     </>
                   ) : (
                     <>
-                      <Icon name="pot" size={18} /> У кошик
+                      <Icon name="pot" size={18} /> {t.add}
                     </>
                   )}
                 </m.span>
@@ -179,6 +183,8 @@ export function ProductCard({ product }: { product: Product }) {
  * (назва, опис, фото, ціни розмірів), але без інтерактиву — доки картку не показано.
  */
 export function ProductCardLight({ product }: { product: Product }) {
+  const t = useI18n().t.card;
+  const { formatPrice } = useFormat();
   return (
     <article className="rounded-[2rem] bg-cream p-3">
       <div className="relative aspect-[4/5] overflow-hidden rounded-[1.6rem] rounded-tr-[4rem] bg-paper">
@@ -195,7 +201,7 @@ export function ProductCardLight({ product }: { product: Product }) {
       <p className="mt-1.5 text-muted">{product.blurb}</p>
       <p className="mt-2 text-sm">
         {product.variants.map((v) => `${v.size}: ${v.label} — ${formatPrice(v.price)}`).join("; ")}
-        {product.stock === "out" ? ". Немає в наявності" : ""}
+        {product.stock === "out" ? t.outFull : ""}
       </p>
     </article>
   );

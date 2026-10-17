@@ -1,6 +1,7 @@
 "use client";
 
 import { useReducedMotion } from "motion/react";
+import { useI18n } from "@/components/I18n";
 import type { Size } from "@/data/types";
 import { useCart } from "@/store/cart";
 import { useFly } from "@/components/motion/fly";
@@ -13,12 +14,13 @@ export function useAddToCart() {
   const launch = useFly((s) => s.launch);
   const say = useAnnounce((s) => s.say);
   const reduce = useReducedMotion();
+  const t = useI18n().t.cart;
 
   return (opts: { id: string; size: Size; qty?: number; name: string; sizeLabel?: string; photo: string; from?: Element | null }) => {
     const qty = opts.qty ?? 1;
     add(opts.id, opts.size, qty);
     if (opts.from && !reduce) launch(opts.photo, opts.from.getBoundingClientRect());
     else bump();
-    say(`${opts.name}${opts.sizeLabel ? `, ${opts.sizeLabel}` : ""} — ${qty > 1 ? `${qty} шт. ` : ""}додано в кошик`);
+    say(t.added(opts.name, opts.sizeLabel ?? "", qty));
   };
 }

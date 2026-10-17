@@ -14,17 +14,19 @@ import { Reviews } from "@/components/sections/Reviews";
 import { RoomPicker } from "@/components/sections/RoomPicker";
 import { LiveRegion } from "@/components/ui/LiveRegion";
 import { homeSchema, jsonLd } from "@/lib/seo/schema";
+import { getI18n } from "@/lib/i18n-server";
 
-export default function Home() {
+export default async function Home() {
+  const dict = await getI18n();
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(homeSchema()) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd(homeSchema(dict)) }} />
       <div id="page">
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[70] focus:rounded-full focus:bg-forest focus:px-5 focus:py-3 focus:text-milk"
         >
-          Перейти до змісту
+          {dict.t.skip}
         </a>
         <Header />
         <main id="main">

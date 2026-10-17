@@ -1,23 +1,26 @@
 "use client";
 
 import { m } from "motion/react";
+import { useI18n } from "@/components/I18n";
 import { useState } from "react";
-import { faq } from "@/data/content";
-import { store } from "@/data/site";
 import { Icon } from "@/components/ui/Icon";
 
 export function Faq() {
+  const { content, site, t: ui } = useI18n();
+  const { faq } = content;
+  const { store } = site;
+  const t = ui.faq;
   const [open, setOpen] = useState<number | null>(0);
 
   return (
     <section id="faq" aria-labelledby="faq-title" className="relative bg-paper py-20 md:py-28">
       <div className="wrap grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
         <div>
-          <p className="hand -rotate-2 text-2xl text-coral-deep">питали — відповідаємо</p>
+          <p className="hand -rotate-2 text-2xl text-coral-deep">{t.note}</p>
           <h2 id="faq-title" className="display mt-1 text-[clamp(2.2rem,5vw,4rem)] text-forest">
-            Часті питання
+            {t.title}
           </h2>
-          <p className="mt-4 max-w-sm text-muted">Не знайшли відповіді? Напишіть нам — ботанік відповість протягом 15 хвилин.</p>
+          <p className="mt-4 max-w-sm text-muted">{t.lead}</p>
           <div className="mt-6 flex flex-wrap gap-3">
             <a href={store.telegram} target="_blank" rel="noopener noreferrer" className="btn btn-forest">
               <Icon name="telegram" size={20} /> Telegram

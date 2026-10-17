@@ -1,22 +1,27 @@
+"use client";
+
 import type { Care } from "@/data/types";
-import { difficultyLabel, lightLabel } from "@/data/catalog-meta";
+import { useI18n } from "@/components/I18n";
 import { Icon } from "./Icon";
 
 const lightIcon = { shade: "shade", diffused: "diffused", bright: "sun" } as const;
 
 /** Іконки догляду: світло, полив, складність, безпечність для тварин */
 export function CareIcons({ care, compact = false }: { care: Care; compact?: boolean }) {
+  const { meta, t: ui } = useI18n();
+  const { difficultyLabel, lightLabel } = meta;
+  const t = ui.careIcons;
   const best = care.light[care.light.length - 1];
   return (
-    <ul className={`flex flex-wrap items-center ${compact ? "gap-1.5" : "gap-2"}`} aria-label="Догляд">
-      <li className="care-pill" title={`Світло: ${care.light.map((l) => lightLabel[l].toLowerCase()).join(", ")}`}>
+    <ul className={`flex flex-wrap items-center ${compact ? "gap-1.5" : "gap-2"}`} aria-label={t.aria}>
+      <li className="care-pill" title={`${t.light}${care.light.map((l) => lightLabel[l].toLowerCase()).join(", ")}`}>
         <Icon name={lightIcon[best]} size={16} className={best === "bright" ? "care-sun text-coral-deep" : "text-forest"} />
-        <span className="sr-only">Світло: </span>
+        <span className="sr-only">{t.light}</span>
         <span className={compact ? "sr-only" : ""}>{care.light.map((l) => lightLabel[l]).join(" / ")}</span>
       </li>
-      <li className="care-pill" title={`Полив: ${care.water}`}>
+      <li className="care-pill" title={`${t.water}${care.water}`}>
         <Icon name="drop" size={16} className="care-drop text-[#3f7fa8]" />
-        <span className="sr-only">Полив: </span>
+        <span className="sr-only">{t.water}</span>
         <span className={compact ? "sr-only" : ""}>{care.water}</span>
       </li>
       <li className="care-pill" title={difficultyLabel[care.difficulty]}>
@@ -34,9 +39,9 @@ export function CareIcons({ care, compact = false }: { care: Care; compact?: boo
         <span className={compact ? "sr-only" : ""}>{difficultyLabel[care.difficulty]}</span>
       </li>
       {care.petSafe && (
-        <li className="care-pill bg-butter/70" title="Безпечна для котів і собак">
+        <li className="care-pill bg-butter/70" title={t.pets}>
           <Icon name="paw" size={16} className="care-paw text-ink" />
-          <span className={compact ? "sr-only" : ""}>Безпечна для тварин</span>
+          <span className={compact ? "sr-only" : ""}>{t.petsShort}</span>
         </li>
       )}
     </ul>

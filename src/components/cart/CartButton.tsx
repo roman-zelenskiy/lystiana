@@ -1,14 +1,15 @@
 "use client";
 
 import { AnimatePresence, m } from "motion/react";
+import { useI18n } from "@/components/I18n";
 import { cartTotals, useCart, useCartHydrated } from "@/store/cart";
-import { plural } from "@/lib/format";
 
 /**
  * Кошик-горщик. Коли рослина «прилітає», горщик пружно присідає, з нього виростає паросток,
  * а цифра лічильника перевертається.
  */
 export function CartButton() {
+  const t = useI18n().t.cart;
   const hydrated = useCartHydrated();
   const lines = useCart((s) => s.lines);
   const promo = useCart((s) => s.promo);
@@ -22,7 +23,7 @@ export function CartButton() {
       id="cart-target"
       onClick={() => setOpen(true)}
       className="relative grid h-11 w-11 place-items-center sm:h-12 sm:w-12 rounded-full bg-forest text-milk transition-transform duration-300 ease-[var(--ease-bounce)] hover:-rotate-6"
-      aria-label={count ? `Кошик: ${count} ${plural(count, ["товар", "товари", "товарів"])}` : "Кошик порожній"}
+      aria-label={t.aria(count)}
     >
       <m.svg
         key={`pot-${bumps}`}

@@ -1,13 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import { useFormat, useI18n } from "@/components/I18n";
 import { AnimatePresence, m } from "motion/react";
 import { useRef, useState } from "react";
-import { categories, lightHint, lightLabel } from "@/data/catalog-meta";
 import { photo } from "@/data/photos";
-import { productById } from "@/data/products";
 import type { Product, Size } from "@/data/types";
-import { formatPrice } from "@/lib/format";
 import { MAX_QTY } from "@/store/cart";
 import { useCatalog } from "@/store/catalog";
 import { useAddToCart } from "@/components/cart/useAddToCart";
@@ -17,6 +15,7 @@ import { Modal } from "@/components/ui/Modal";
 import { Badges, defaultSize } from "./ProductCard";
 
 export function QuickView() {
+  const { productById } = useI18n();
   const id = useCatalog((s) => s.quickView);
   const close = useCatalog((s) => s.openQuickView);
   const product = id ? productById.get(id) : undefined;
@@ -33,6 +32,10 @@ export function QuickView() {
 }
 
 function QuickViewBody({ product, onDone }: { product: Product; onDone: () => void }) {
+  const { meta, t: ui } = useI18n();
+  const { categories, lightHint, lightLabel } = meta;
+  const { formatPrice } = useFormat();
+  const t = ui.quick;
   const [size, setSize] = useState<Size>(defaultSize(product));
   const [qty, setQty] = useState(1);
   const [img, setImg] = useState(0);
@@ -57,7 +60,7 @@ function QuickViewBody({ product, onDone }: { product: Product; onDone: () => vo
             >
               <Image
                 src={photo(product.photos[img])}
-                alt={img === 0 ? product.alt : `${product.name}: ще одне фото`}
+                alt={img === 0 ? product.alt : t.morePhoto(product.name)}
                 fill
                 sizes="(min-width: 768px) 420px, 100vw"
                 className="object-cover"
@@ -66,13 +69,13 @@ function QuickViewBody({ product, onDone }: { product: Product; onDone: () => vo
           </AnimatePresence>
           <Badges product={product} size={size} />
         </div>
-        <div className="mt-3 flex gap-2" role="group" aria-label="Фото товару">
+        <div className="mt-3 flex gap-2" role="group" aria-label={t.photos}>
           {product.photos.map((key, i) => (
             <button
               key={key}
               type="button"
               onClick={() => setImg(i)}
-              aria-label={`Фото ${i + 1} з ${product.photos.length}`}
+              aria-label={t.photo(i + 1, product.photos.length)}
               aria-pressed={img === i}
               className={`relative h-16 w-16 overflow-hidden rounded-2xl transition ${img === i ? "ring-3 ring-forest" : "opacity-70 hover:opacity-100"}`}
             >
@@ -92,24 +95,24 @@ function QuickViewBody({ product, onDone }: { product: Product; onDone: () => vo
           <p className="mt-2 flex items-center gap-1.5 text-sm font-bold">
             <Icon name="star" size={16} className="text-[#e0a400]" fill="currentColor" />
             {product.rating.value.toFixed(1)}
-            <span className="font-normal text-muted">· {product.rating.count} відгуків</span>
+            <span className="font-normal text-muted">· {ui.card.reviews(product.rating.count)}</span>
           </p>
         )}
         <p className="mt-4">{product.description}</p>
 
         {product.care && (
           <div className="mt-5 rounded-3xl bg-paper p-4">
-            <p className="mb-2 font-extrabold">Догляд</p>
+            <p className="mb-2 font-extrabold">{t.care}</p>
             <CareIcons care={product.care} />
             <p className="mt-2 text-sm text-muted">
-              {lightLabel[product.care.light[0]]} світло: {lightHint[product.care.light[0]].toLowerCase()}.
+              {t.lightLine(lightLabel[product.care.light[0]], lightHint[product.care.light[0]])}
             </p>
           </div>
         )}
 
         {product.variants.length > 1 && (
           <fieldset className="mt-5">
-            <legend className="mb-2 font-extrabold">Розмір</legend>
+            <legend className="mb-2 font-extrabold">{ui.card.size}</legend>
             <div className="grid gap-2">
               {product.variants.map((x) => (
                 <label key={x.size} className="variant-row">
@@ -124,14 +127,14 @@ function QuickViewBody({ product, onDone }: { product: Product; onDone: () => vo
         )}
 
         <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-line pt-5">
-          <div className="flex items-center rounded-full bg-paper p-1" role="group" aria-label="Кількість">
-            <button type="button" className="qty-btn" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1} aria-label="Менше">
+          <div className="flex items-center rounded-full bg-paper p-1" role="group" aria-label={t.qty}>
+            <button type="button" className="qty-btn" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={qty <= 1} aria-label={t.less}>
               <Icon name="minus" size={18} />
             </button>
-            <output className="w-10 text-center font-black" aria-live="polite" aria-label={`Кількість: ${qty}`}>
+            <output className="w-10 text-center font-black" aria-live="polite" aria-label={t.qtyIs(qty)}>
               {qty}
             </output>
-            <button type="button" className="qty-btn" onClick={() => setQty((q) => Math.min(MAX_QTY, q + 1))} disabled={qty >= MAX_QTY} aria-label="Більше">
+            <button type="button" className="qty-btn" onClick={() => setQty((q) => Math.min(MAX_QTY, q + 1))} disabled={qty >= MAX_QTY} aria-label={t.more}>
               <Icon name="plus" size={18} />
             </button>
           </div>
@@ -140,21 +143,21 @@ function QuickViewBody({ product, onDone }: { product: Product; onDone: () => vo
             className="btn btn-coral h-13 flex-1 text-lg"
             disabled={out}
             onClick={() => {
-              addToCart({ id: product.id, size, qty, name: product.name, sizeLabel: `розмір ${size}`, photo: product.photos[0], from: media.current });
+              addToCart({ id: product.id, size, qty, name: product.name, sizeLabel: ui.card.sizeLabel(size), photo: product.photos[0], from: media.current });
               onDone();
             }}
           >
             {out ? (
-              "Немає в наявності"
+              t.outFull
             ) : (
               <>
-                <Icon name="pot" /> У кошик · {formatPrice(v.price * qty)}
+                <Icon name="pot" /> {t.addTotal(formatPrice(v.price * qty))}
               </>
             )}
           </button>
         </div>
         <p className="mt-3 flex items-center gap-2 text-sm text-muted">
-          <Icon name="shield" size={18} className="text-forest" /> Гарантія приживлення 14 днів
+          <Icon name="shield" size={18} className="text-forest" /> {t.guarantee}
         </p>
       </div>
     </div>

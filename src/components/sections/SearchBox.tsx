@@ -1,10 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import { useFormat, useI18n } from "@/components/I18n";
 import { useId, useMemo, useState } from "react";
-import { products } from "@/data/products";
 import { photo } from "@/data/photos";
-import { formatPrice } from "@/lib/format";
 import { fromPrice, matchesQuery } from "@/lib/filter";
 import { useCatalog } from "@/store/catalog";
 import { Icon } from "@/components/ui/Icon";
@@ -14,6 +13,9 @@ import { Icon } from "@/components/ui/Icon";
  * а Enter без вибраної підказки застосовує пошук до каталогу.
  */
 export function SearchBox({ onDone, autoFocus = false }: { onDone?: () => void; autoFocus?: boolean }) {
+  const { products, t: ui } = useI18n();
+  const { formatPrice } = useFormat();
+  const t = ui.search;
   const id = useId();
   const [value, setValue] = useState("");
   const [open, setOpen] = useState(false);
@@ -23,7 +25,7 @@ export function SearchBox({ onDone, autoFocus = false }: { onDone?: () => void; 
 
   const results = useMemo(
     () => (value.trim().length < 2 ? [] : products.filter((p) => matchesQuery(p, value)).slice(0, 5)),
-    [value],
+    [value, products],
   );
   const expanded = open && value.trim().length >= 2;
 
@@ -52,7 +54,7 @@ export function SearchBox({ onDone, autoFocus = false }: { onDone?: () => void; 
       }}
     >
       <label htmlFor={`${id}-q`} className="sr-only">
-        Пошук рослин
+        {t.label}
       </label>
       <Icon name="search" size={20} className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-muted" />
       <input
@@ -65,7 +67,7 @@ export function SearchBox({ onDone, autoFocus = false }: { onDone?: () => void; 
         aria-activedescendant={active >= 0 ? `${id}-o${active}` : undefined}
         autoComplete="off"
         autoFocus={autoFocus}
-        placeholder="Монстера, кашпо, для котів…"
+        placeholder={t.placeholder}
         className="field !min-h-11 !rounded-full !py-2 pr-4 pl-11"
         value={value}
         onChange={(e) => {
@@ -92,7 +94,7 @@ export function SearchBox({ onDone, autoFocus = false }: { onDone?: () => void; 
       />
       {expanded && (
         <div className="absolute top-full right-0 left-0 z-30 mt-2 overflow-hidden rounded-3xl bg-cream p-2 shadow-[var(--shadow-card)] ring-1 ring-line">
-          <ul id={`${id}-list`} role="listbox" aria-label="Підказки пошуку">
+          <ul id={`${id}-list`} role="listbox" aria-label={t.hints}>
             {results.map((p, i) => (
               <li
                 key={p.id}
@@ -113,16 +115,16 @@ export function SearchBox({ onDone, autoFocus = false }: { onDone?: () => void; 
                 />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-extrabold">{p.name}</span>
-                  <span className="block text-sm text-muted">від {formatPrice(fromPrice(p))}</span>
+                  <span className="block text-sm text-muted">{t.from(formatPrice(fromPrice(p)))}</span>
                 </span>
               </li>
             ))}
           </ul>
           {results.length === 0 ? (
-            <p className="p-3 text-muted">Нічого не знайшли — спробуйте «монстера» або «кашпо».</p>
+            <p className="p-3 text-muted">{t.none}</p>
           ) : (
             <button type="submit" className="mt-1 w-full rounded-2xl p-3 text-left font-extrabold text-forest hover:bg-paper">
-              Показати всі результати в каталозі →
+              {t.all}
             </button>
           )}
         </div>

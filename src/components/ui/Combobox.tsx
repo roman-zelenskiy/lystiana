@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useI18n } from "@/components/I18n";
 import { Icon } from "./Icon";
 
 export type ComboOption = { id: string; label: string; hint?: string };
@@ -20,7 +21,9 @@ type Props = {
 const norm = (s: string) => s.toLowerCase().replace(/[’ʼ'`.,№]/g, "").replace(/\s+/g, " ").trim();
 
 /** Поле з пошуком і списком варіантів (ARIA combobox + listbox) */
-export function Combobox({ id, label, options, value, onChange, placeholder, error, disabled, emptyText = "Нічого не знайдено" }: Props) {
+export function Combobox({ id, label, options, value, onChange, placeholder, error, disabled, emptyText: emptyProp }: Props) {
+  const { t } = useI18n();
+  const emptyText = emptyProp ?? t.catalog.nothing;
   const selected = options.find((o) => o.id === value) ?? null;
   const [query, setQuery] = useState(selected?.label ?? "");
   const [open, setOpen] = useState(false);

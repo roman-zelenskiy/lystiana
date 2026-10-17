@@ -1,23 +1,26 @@
 "use client";
 
 import { m, useInView, useReducedMotion } from "motion/react";
+import { useFormat, useI18n } from "@/components/I18n";
 import { useEffect, useRef, useState } from "react";
-import { delivery } from "@/data/content";
 import { FREE_SHIPPING_FROM } from "@/data/site";
-import { formatPrice } from "@/lib/format";
 import { Icon, type IconName } from "@/components/ui/Icon";
 
 const methodIcon: Record<string, IconName> = { warehouse: "box", postomat: "locker", courier: "courier" };
 const stepIcon: IconName[] = ["pot", "box", "truck", "sprout"];
 
 export function Delivery() {
+  const { content, t: ui } = useI18n();
+  const { delivery } = content;
+  const { formatPrice } = useFormat();
+  const t = ui.delivery;
   const reduce = useReducedMotion();
   return (
     <section id="dostavka" aria-labelledby="dostavka-title" className="relative py-20 md:py-28">
       <div className="wrap">
-        <p className="hand -rotate-2 text-2xl text-coral-deep">від оранжереї до підвіконня</p>
+        <p className="hand -rotate-2 text-2xl text-coral-deep">{t.note}</p>
         <h2 id="dostavka-title" className="display mt-1 text-[clamp(2.2rem,5vw,4rem)] text-forest">
-          Доставка та оплата
+          {t.title}
         </h2>
 
         {/* маршрут посилки: коробка «їде» вздовж пунктиру, коли секція з’являється */}
@@ -43,7 +46,7 @@ export function Delivery() {
 
         <div className="mt-14 grid gap-6 lg:grid-cols-[1.3fr_1fr]">
           <div className="rounded-[2.25rem] bg-cream p-6 shadow-[var(--shadow-card)] ring-1 ring-line/60 md:p-8">
-            <h3 className="display text-2xl text-forest">Нова Пошта по всій Україні</h3>
+            <h3 className="display text-2xl text-forest">{t.np}</h3>
             <ul className="mt-5 grid gap-3 sm:grid-cols-3">
               {delivery.methods.map((m) => (
                 <li key={m.id} className="rounded-3xl bg-paper p-4">
@@ -63,14 +66,14 @@ export function Delivery() {
 
           <div className="flex flex-col gap-6">
             <div className="relative overflow-hidden rounded-[2.25rem] bg-coral p-6 text-ink md:p-8">
-              <p className="hand text-2xl">а ще —</p>
+              <p className="hand text-2xl">{t.also}</p>
               <p className="display mt-1 text-[clamp(1.6rem,3vw,2.3rem)] leading-tight">
-                Безкоштовна доставка від {formatPrice(FREE_SHIPPING_FROM)}
+                {t.free(formatPrice(FREE_SHIPPING_FROM))}
               </p>
               <Icon name="truck" size={120} strokeWidth={1.2} className="absolute -right-4 -bottom-6 opacity-20" />
             </div>
             <div className="rounded-[2.25rem] bg-sage p-6 md:p-8">
-              <h3 className="text-xl font-black">Оплата</h3>
+              <h3 className="text-xl font-black">{t.payment}</h3>
               <ul className="mt-3 grid gap-2">
                 {delivery.payment.map((p, i) => (
                   <li key={p} className="flex items-start gap-2">

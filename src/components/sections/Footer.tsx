@@ -1,14 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { categories } from "@/data/catalog-meta";
-import { legal, type LegalId } from "@/data/legal";
-import { nav, store } from "@/data/site";
+import { useI18n } from "@/components/I18n";
+import { type LegalId } from "@/data/legal";
 import { Icon } from "@/components/ui/Icon";
 import { Logo } from "@/components/ui/Logo";
 import { Modal } from "@/components/ui/Modal";
 
 export function Footer() {
+  const { meta, legal, site, t: ui } = useI18n();
+  const { categories } = meta;
+  const { nav, store } = site;
+  const t = ui.footer;
   const [doc, setDoc] = useState<LegalId | null>(null);
   const [last, setLast] = useState<LegalId>("privacy");
   if (doc && doc !== last) setLast(doc);
@@ -20,12 +23,12 @@ export function Footer() {
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
           <div>
             <span className="inline-block rounded-full bg-milk px-4 py-2">
-              <Logo />
+              <Logo name={store.name} />
             </span>
             <p className="mt-4 max-w-xs text-milk/80">
-              Інтернет-магазин кімнатних рослин, кашпо і засобів догляду. Доставка Новою Поштою по всій Україні.
+              {t.about}
             </p>
-            <ul className="mt-6 flex gap-2" aria-label="Ми в соцмережах">
+            <ul className="mt-6 flex gap-2" aria-label={t.socials}>
               {[
                 { href: store.instagram, icon: "instagram", label: "Instagram" },
                 { href: store.telegram, icon: "telegram", label: "Telegram" },
@@ -36,7 +39,7 @@ export function Footer() {
                     href={s.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={`«Листяна» в ${s.label}`}
+                    aria-label={t.in(store.name, s.label)}
                     className="grid h-12 w-12 place-items-center rounded-full bg-milk/10 transition-transform duration-300 ease-[var(--ease-bounce)] hover:-rotate-12 hover:bg-butter hover:text-ink"
                   >
                     <Icon name={s.icon as "instagram" | "telegram" | "tiktok"} />
@@ -46,8 +49,8 @@ export function Footer() {
             </ul>
           </div>
 
-          <nav aria-label="Розділи">
-            <h2 className="hand text-2xl text-butter">Розділи</h2>
+          <nav aria-label={t.sections}>
+            <h2 className="hand text-2xl text-butter">{t.sections}</h2>
             <ul className="mt-3 grid gap-1">
               {nav.map((n) => (
                 <li key={n.id}>
@@ -59,8 +62,8 @@ export function Footer() {
             </ul>
           </nav>
 
-          <nav aria-label="Категорії каталогу">
-            <h2 className="hand text-2xl text-butter">Каталог</h2>
+          <nav aria-label={t.catalogNav}>
+            <h2 className="hand text-2xl text-butter">{t.catalog}</h2>
             <ul className="mt-3 grid gap-1">
               {categories.map((c) => (
                 <li key={c.id}>
@@ -73,7 +76,7 @@ export function Footer() {
           </nav>
 
           <div>
-            <h2 className="hand text-2xl text-butter">Контакти</h2>
+            <h2 className="hand text-2xl text-butter">{t.contacts}</h2>
             <address className="mt-3 grid gap-2 not-italic">
               <a href={store.phoneHref} className="flex items-center gap-2 py-1 hover:text-butter">
                 <Icon name="phone" size={18} /> {store.phone}
@@ -84,7 +87,7 @@ export function Footer() {
               <span className="flex items-start gap-2 py-1">
                 <Icon name="pin" size={18} className="mt-1 shrink-0" />
                 <span>
-                  Шоурум: {store.city}, {store.street}
+                  {t.showroom(store.city, store.street)}
                   <br />
                   <span className="text-milk/70">{store.hours}</span>
                 </span>
@@ -94,13 +97,13 @@ export function Footer() {
         </div>
 
         <div className="mt-14 flex flex-wrap items-center justify-between gap-4 border-t border-milk/15 pt-6 text-sm text-milk/70">
-          <p>© 2026 «{store.name}». Демо-магазин для портфоліо — замовлення не обробляються.</p>
+          <p>{t.copy(store.name)}</p>
           <div className="flex flex-wrap gap-4">
             <button type="button" className="py-1 underline underline-offset-4 hover:text-butter" onClick={() => setDoc("privacy")}>
-              Політика конфіденційності
+              {t.privacy}
             </button>
             <button type="button" className="py-1 underline underline-offset-4 hover:text-butter" onClick={() => setDoc("returns")}>
-              Умови повернення
+              {t.returns}
             </button>
           </div>
         </div>
@@ -111,7 +114,7 @@ export function Footer() {
           <h2 id="legal-title" className="display pr-12 text-3xl text-forest">
             {shown.title}
           </h2>
-          <p className="mt-1 text-sm text-muted">Оновлено {shown.updated}</p>
+          <p className="mt-1 text-sm text-muted">{t.updated(shown.updated)}</p>
           {shown.sections.map((s) => (
             <section key={s.h} className="mt-6">
               <h3 className="text-lg font-black">{s.h}</h3>

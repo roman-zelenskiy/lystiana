@@ -1,8 +1,8 @@
 "use client";
 
 import { m, useReducedMotion } from "motion/react";
-import { careTips, guaranteeDiary } from "@/data/content";
-import { GUARANTEE_DAYS, store } from "@/data/site";
+import { useI18n } from "@/components/I18n";
+import { GUARANTEE_DAYS } from "@/data/site";
 import { Icon, type IconName } from "@/components/ui/Icon";
 
 /** Стадія паростка за днем: насінина → паросток → листки → рослина */
@@ -26,6 +26,10 @@ function Sprout({ day }: { day: number }) {
 }
 
 export function Care() {
+  const { content, site, t: ui } = useI18n();
+  const { careTips, guaranteeDiary } = content;
+  const { store } = site;
+  const tc = ui.care;
   const reduce = useReducedMotion();
   const days = Array.from({ length: GUARANTEE_DAYS }, (_, i) => i + 1);
   const notes = new Map<number, string>(guaranteeDiary.map((d) => [d.day, d.text]));
@@ -35,16 +39,15 @@ export function Care() {
       <div className="wrap">
         <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
           <div>
-            <p className="hand -rotate-2 text-2xl text-coral-deep">коротко і по-людськи</p>
+            <p className="hand -rotate-2 text-2xl text-coral-deep">{tc.note}</p>
             <h2 id="dohliad-title" className="display mt-1 text-[clamp(2.2rem,5vw,4rem)] text-forest">
-              Догляд без стресу
+              {tc.title}
             </h2>
             <p className="mt-4 max-w-lg text-lg text-muted">
-              Кожна рослина приїжджає з карткою догляду, а наші ботаніки відповідають у Telegram щодня з 9:00 до 21:00. Ось чотири правила, які
-              рятують 90% рослин.
+              {tc.lead}
             </p>
             <a href={store.telegram} target="_blank" rel="noopener noreferrer" className="btn btn-forest mt-6">
-              <Icon name="telegram" size={20} /> Спитати ботаніка
+              <Icon name="telegram" size={20} /> {tc.ask}
             </a>
           </div>
 
@@ -72,10 +75,10 @@ export function Care() {
         <div className="mt-16 rounded-[2.5rem] bg-forest p-6 text-milk md:p-10">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <h3 className="display text-[clamp(1.6rem,3.4vw,2.6rem)]">
-              Гарантія приживлення <span className="text-butter">{GUARANTEE_DAYS}&nbsp;днів</span>
+              {tc.guaranteeA} <span className="text-butter">{tc.guaranteeB(GUARANTEE_DAYS)}</span>
             </h3>
             <p className="max-w-md text-milk/80">
-              Якщо за два тижні рослина не прижилася — надішліть фото, і ми безкоштовно замінимо її або повернемо гроші.
+              {tc.guaranteeText}
             </p>
           </div>
           <ol className="mt-8 grid grid-cols-7 gap-2 md:grid-cols-14">
@@ -93,7 +96,7 @@ export function Care() {
                 >
                   <Sprout day={d} />
                   <span className="text-xs font-black">
-                    <span className="sr-only">День </span>
+                    <span className="sr-only">{tc.daySr}</span>
                     {d}
                   </span>
                   {note && <span className="sr-only">: {note}</span>}
@@ -104,7 +107,7 @@ export function Care() {
           <ul className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4" aria-hidden="true">
             {guaranteeDiary.map((d) => (
               <li key={d.day} className="flex gap-3">
-                <span className="hand shrink-0 text-2xl leading-none text-butter">День {d.day}</span>
+                <span className="hand shrink-0 text-2xl leading-none text-butter">{tc.day(d.day)}</span>
                 <span className="text-sm text-milk/85">{d.text}</span>
               </li>
             ))}

@@ -5,5 +5,12 @@ import { siteUrl } from "@/data/site";
 export const dynamic = "force-static";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [{ url: `${siteUrl}/`, lastModified: "2026-10-11", changeFrequency: "weekly", priority: 1 }];
+  const languages = { uk: `${siteUrl}/uk/`, en: `${siteUrl}/en/` };
+  return (["uk", "en"] as const).map((l) => ({
+    url: `${siteUrl}/${l}/`,
+    lastModified: "2026-10-17",
+    changeFrequency: "weekly",
+    priority: l === "uk" ? 1 : 0.9,
+    alternates: { languages },
+  }));
 }

@@ -2,11 +2,8 @@
  * Форматування без Intl: однаковий результат на сервері й у браузері
  * (Intl у Node та в браузері може відрізнятися пробілом-розділювачем — це hydration mismatch).
  */
-export function formatPrice(n: number) {
-  const s = Math.round(n)
-    .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-  return `${s} грн`;
+export function formatPrice(n: number, lang: "uk" | "en" = "uk") {
+  return `${formatNumber(n, lang)} ${lang === "en" ? "UAH" : "грн"}`;
 }
 
 /** Українські відмінки: plural(3, ["товар", "товари", "товарів"]) → "товари" */
@@ -21,4 +18,8 @@ export function plural(n: number, [one, few, many]: readonly [string, string, st
 export const discountPercent = (price: number, oldPrice?: number) =>
   oldPrice && oldPrice > price ? Math.round((1 - price / oldPrice) * 100) : 0;
 
-export const formatNumber = (n: number) => Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+/** Розділювач тисяч: нерозривний пробіл (uk) або кома (en) */
+export const formatNumber = (n: number, lang: "uk" | "en" = "uk") =>
+  Math.round(n)
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, lang === "en" ? "," : "\u00a0");

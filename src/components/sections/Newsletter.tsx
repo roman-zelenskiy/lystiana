@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, m } from "motion/react";
+import { useI18n } from "@/components/I18n";
 import { useState, type FormEvent } from "react";
 import { Icon } from "@/components/ui/Icon";
 
@@ -8,10 +9,11 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 /** Підписка (демо): перевіряємо адресу, показуємо успіх, нікуди нічого не надсилаємо */
 export function Newsletter() {
+  const t = useI18n().t.news;
   const [email, setEmail] = useState("");
   const [touched, setTouched] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
-  const error = !email.trim() ? "Вкажіть email, щоб ми знали, куди писати" : !EMAIL.test(email.trim()) ? "Схоже, в адресі помилка — перевірте, будь ласка" : "";
+  const error = !email.trim() ? t.errEmpty : !EMAIL.test(email.trim()) ? t.errBad : "";
   const showError = touched && !!error;
 
   const onSubmit = (e: FormEvent) => {
@@ -34,11 +36,11 @@ export function Newsletter() {
           </svg>
           <div className="relative grid gap-8 lg:grid-cols-2 lg:items-center">
             <div>
-              <p className="hand -rotate-2 text-2xl text-coral-deep">раз на два тижні, без спаму</p>
+              <p className="hand -rotate-2 text-2xl text-coral-deep">{t.note}</p>
               <h2 id="nl-title" className="display mt-1 text-[clamp(2rem,4.4vw,3.4rem)] text-forest">
-                Листи про рослини і −10% на перше замовлення
+                {t.title}
               </h2>
-              <p className="mt-3 max-w-md text-ink/80">Сезонні поради з догляду, нові надходження і закриті розпродажі для підписників.</p>
+              <p className="mt-3 max-w-md text-ink/80">{t.lead}</p>
             </div>
 
             <AnimatePresence mode="wait">
@@ -59,15 +61,15 @@ export function Newsletter() {
                   >
                     <Icon name="mail" />
                   </m.span>
-                  <p className="display mt-4 text-2xl text-forest">Лист уже летить!</p>
+                  <p className="display mt-4 text-2xl text-forest">{t.sent}</p>
                   <p className="mt-2 text-muted">
-                    Це демо-магазин, тож насправді лист не прийде. Але промокод на −10% справжній для цього сайту: <strong className="text-ink">LISTYANA10</strong>
+                    {t.demo} <strong className="text-ink">LISTYANA10</strong>
                   </p>
                 </m.div>
               ) : (
                 <m.form key="form" noValidate onSubmit={onSubmit} exit={{ opacity: 0, y: -10 }} className="grid gap-2">
                   <label htmlFor="nl-email" className="label">
-                    Ваш email
+                    {t.email}
                   </label>
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <input
@@ -84,7 +86,7 @@ export function Newsletter() {
                       onBlur={() => setTouched(true)}
                     />
                     <button type="submit" className="btn btn-forest h-12" disabled={status === "loading"}>
-                      {status === "loading" ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-milk border-t-transparent" aria-label="Надсилаємо" /> : "Підписатися"}
+                      {status === "loading" ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-milk border-t-transparent" aria-label={t.sending} /> : t.subscribe}
                     </button>
                   </div>
                   {showError ? (
@@ -93,7 +95,7 @@ export function Newsletter() {
                     </p>
                   ) : (
                     <p id="nl-note" className="text-sm text-ink/70">
-                      Демо-форма: адреса нікуди не надсилається і не зберігається.
+                      {t.demoNote}
                     </p>
                   )}
                 </m.form>

@@ -524,3 +524,44 @@ html.lock {
     transform: rotate(calc(var(--swing-dir, 1) * -2deg));
   }
 }
+
+/* Курсор: Tailwind preflight скидає pointer на кнопках — повертаємо для всього клікабельного */
+@layer base {
+  a[href],
+  button,
+  summary,
+  label[for],
+  select,
+  [role="button"],
+  [role="tab"],
+  [role="option"],
+  [role="radio"],
+  [role="checkbox"],
+  [role="combobox"]:not(input),
+  input[type="radio"],
+  input[type="checkbox"],
+  input[type="range"] {
+    cursor: pointer;
+  }
+  :disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
+/* Тонкі зелені скролбари — у кошику, діалогах, списках підказок і стрічці категорій */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(30 74 54 / 0.4) transparent;
+}
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgb(30 74 54 / 0.4);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}

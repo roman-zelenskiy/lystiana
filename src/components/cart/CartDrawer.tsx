@@ -1,11 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import { useFormat, useI18n } from "@/components/I18n";
 import { AnimatePresence, m } from "motion/react";
 import { useEffect, useState, type FormEvent } from "react";
 import { photo } from "@/data/photos";
-import { promoCodes } from "@/data/site";
-import { formatPrice, plural } from "@/lib/format";
 import { resolveItem } from "@/lib/items";
 import { MAX_QTY, cartTotals, lineKey, useCart, useCartHydrated } from "@/store/cart";
 import { useCheckout } from "@/store/checkout";
@@ -15,6 +14,10 @@ import { Modal } from "@/components/ui/Modal";
 import { FreeShippingPlant } from "./FreeShippingPlant";
 
 export function CartDrawer() {
+  const dict = useI18n();
+  const ui = dict.t;
+  const c = ui.cart;
+  const { formatPrice } = useFormat();
   const open = useCart((s) => s.open);
   const setOpen = useCart((s) => s.setOpen);
   const hydrated = useCartHydrated();
@@ -39,17 +42,17 @@ export function CartDrawer() {
     return () => clearTimeout(id);
   }, [undoVisible]);
 
-  const removedItem = removed ? resolveItem(removed.line.productId, removed.line.size) : null;
+  const removedItem = removed ? resolveItem(removed.line.productId, removed.line.size, dict) : null;
 
   return (
-    <Modal open={open} onClose={() => setOpen(false)} labelledBy="cart-title" variant="side" closeLabel="Закрити кошик">
+    <Modal open={open} onClose={() => setOpen(false)} labelledBy="cart-title" variant="side" closeLabel={c.close}>
       <div className="flex items-center gap-3 border-b border-line px-5 pt-5 pb-4">
         <h2 id="cart-title" className="display text-3xl text-forest">
-          Кошик
+          {c.title}
         </h2>
         {t.count > 0 && (
           <span className="rounded-full bg-butter px-2.5 py-0.5 text-sm font-black">
-            {t.count} {plural(t.count, ["товар", "товари", "товарів"])}
+            {ui.items(t.count)}
           </span>
         )}
       </div>
@@ -63,7 +66,7 @@ export function CartDrawer() {
             <ul className="mt-4 grid gap-3">
               <AnimatePresence initial={false} mode="popLayout">
                 {lines.map((l) => {
-                  const item = resolveItem(l.productId, l.size);
+                  const item = resolveItem(l.productId, l.size, dict);
                   if (!item) return null;
                   const key = lineKey(l);
                   return (
@@ -87,9 +90,9 @@ export function CartDrawer() {
                             className="-mt-1 -mr-1 grid h-10 w-10 shrink-0 place-items-center rounded-full text-muted hover:bg-[#ffe4dd] hover:text-coral-deep"
                             onClick={() => {
                               remove(key);
-                              say(`${item.name} видалено з кошика`);
+                              say(c.removed(item.name));
                             }}
-                            aria-label={`Видалити: ${item.name}, ${item.size}`}
+                            aria-label={c.removeAria(item.name, item.size)}
                           >
                             <Icon name="trash" size={19} />
                           </button>
@@ -98,14 +101,14 @@ export function CartDrawer() {
                           {item.id.startsWith("nabir-") ? item.sizeLabel : `${item.size} · ${item.sizeLabel}`}
                         </p>
                         <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-                          <div className="flex items-center rounded-full bg-paper p-0.5" role="group" aria-label={`Кількість: ${item.name}`}>
-                            <button type="button" className="qty-btn !h-9 !w-9" disabled={l.qty <= 1} onClick={() => setQty(key, l.qty - 1)} aria-label="Менше">
+                          <div className="flex items-center rounded-full bg-paper p-0.5" role="group" aria-label={c.qtyOf(item.name)}>
+                            <button type="button" className="qty-btn !h-9 !w-9" disabled={l.qty <= 1} onClick={() => setQty(key, l.qty - 1)} aria-label={ui.quick.less}>
                               <Icon name="minus" size={16} />
                             </button>
                             <span className="w-8 text-center font-black" aria-live="polite">
                               {l.qty}
                             </span>
-                            <button type="button" className="qty-btn !h-9 !w-9" disabled={l.qty >= MAX_QTY} onClick={() => setQty(key, l.qty + 1)} aria-label="Більше">
+                            <button type="button" className="qty-btn !h-9 !w-9" disabled={l.qty >= MAX_QTY} onClick={() => setQty(key, l.qty + 1)} aria-label={ui.quick.more}>
                               <Icon name="plus" size={16} />
                             </button>
                           </div>
@@ -123,21 +126,21 @@ export function CartDrawer() {
           <div className="border-t border-line bg-cream px-5 pt-4 pb-5">
             <dl className="grid gap-1.5 text-[0.98rem]">
               <div className="flex justify-between">
-                <dt className="text-muted">Проміжна сума</dt>
+                <dt className="text-muted">{c.subtotal}</dt>
                 <dd className="font-bold">{formatPrice(t.subtotal)}</dd>
               </div>
               {t.discount > 0 && (
                 <div className="flex justify-between text-coral-deep">
-                  <dt>Знижка {promo}</dt>
+                  <dt>{c.discount(promo ?? "")}</dt>
                   <dd className="font-bold">−{formatPrice(t.discount)}</dd>
                 </div>
               )}
               <div className="flex justify-between">
-                <dt className="text-muted">Доставка</dt>
-                <dd className="font-bold">{t.freeShipping ? "безкоштовно" : "за тарифами НП"}</dd>
+                <dt className="text-muted">{c.delivery}</dt>
+                <dd className="font-bold">{t.freeShipping ? c.free : c.byTariff}</dd>
               </div>
               <div className="mt-1 flex items-end justify-between border-t border-dashed border-line pt-2">
-                <dt className="font-black">До сплати</dt>
+                <dt className="font-black">{c.total}</dt>
                 <dd className="display text-2xl text-forest">{formatPrice(t.total)}</dd>
               </div>
             </dl>
@@ -149,7 +152,7 @@ export function CartDrawer() {
                 startCheckout();
               }}
             >
-              Оформити замовлення <Icon name="arrow" />
+              {c.checkout} <Icon name="arrow" />
             </button>
           </div>
         </>
@@ -165,7 +168,7 @@ export function CartDrawer() {
             role="status"
           >
             <span className="flex-1 text-sm">
-              <b>{removedItem.name}</b> видалено
+              <b>{removedItem.name}</b> {c.undoText}
             </span>
             <button
               type="button"
@@ -173,10 +176,10 @@ export function CartDrawer() {
               onClick={() => {
                 undo();
                 setUndoVisible(false);
-                say(`${removedItem.name} повернуто в кошик`);
+                say(c.restored(removedItem.name));
               }}
             >
-              <Icon name="undo" size={18} /> Скасувати
+              <Icon name="undo" size={18} /> {c.undo}
             </button>
           </m.div>
         )}
@@ -186,6 +189,9 @@ export function CartDrawer() {
 }
 
 function PromoField() {
+  const { site, t: ui } = useI18n();
+  const { promoCodes } = site;
+  const c = ui.cart;
   const promo = useCart((s) => s.promo);
   const applyPromo = useCart((s) => s.applyPromo);
   const removePromo = useCart((s) => s.removePromo);
@@ -194,8 +200,8 @@ function PromoField() {
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!code.trim()) return setError("Введіть промокод");
-    if (!applyPromo(code)) return setError("Такого промокоду немає. Спробуйте LISTYANA10");
+    if (!code.trim()) return setError(c.promoEmpty);
+    if (!applyPromo(code)) return setError(c.promoWrong);
     setError("");
     setCode("");
   };
@@ -207,7 +213,7 @@ function PromoField() {
           <Icon name="gift" size={18} className="mr-1.5 inline -translate-y-0.5" />
           {promo}: {promoCodes[promo].label}
         </span>
-        <button type="button" onClick={removePromo} className="grid h-9 w-9 place-items-center rounded-full hover:bg-ink/10" aria-label="Прибрати промокод">
+        <button type="button" onClick={removePromo} className="grid h-9 w-9 place-items-center rounded-full hover:bg-ink/10" aria-label={c.promoRemove}>
           <Icon name="close" size={16} />
         </button>
       </div>
@@ -216,7 +222,7 @@ function PromoField() {
   return (
     <form onSubmit={onSubmit} noValidate className="mt-4">
       <label htmlFor="promo" className="label">
-        Промокод
+        {c.promo}
       </label>
       <div className="flex gap-2">
         <input
@@ -233,7 +239,7 @@ function PromoField() {
           }}
         />
         <button type="submit" className="btn btn-ghost h-11 shrink-0 px-4">
-          Застосувати
+          {c.apply}
         </button>
       </div>
       {error && (
@@ -246,6 +252,7 @@ function PromoField() {
 }
 
 function EmptyCart({ onClose }: { onClose: () => void }) {
+  const c = useI18n().t.cart;
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
       <m.svg
@@ -266,14 +273,14 @@ function EmptyCart({ onClose }: { onClose: () => void }) {
         <circle cx="72" cy="80" r="2.5" fill="var(--color-ink)" />
         <path d="M52 92c5-4 11-4 16 0" stroke="var(--color-ink)" strokeWidth="2.5" fill="none" strokeLinecap="round" />
       </m.svg>
-      <p className="display mt-4 text-2xl text-forest">Порожньо, як горщик навесні</p>
-      <p className="mt-2 text-muted">Додайте першу рослину — ми підкажемо, як за нею доглядати.</p>
+      <p className="display mt-4 text-2xl text-forest">{c.emptyTitle}</p>
+      <p className="mt-2 text-muted">{c.emptyText}</p>
       <a
         href="#katalog"
         className="btn btn-forest mt-6"
         onClick={onClose}
       >
-        До каталогу <Icon name="arrow" />
+        {c.shop} <Icon name="arrow" />
       </a>
     </div>
   );

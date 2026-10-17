@@ -1,9 +1,7 @@
-import { categories } from "@/data/catalog-meta";
-import { faq } from "@/data/content";
 import { photo } from "@/data/photos";
-import { products } from "@/data/products";
-import { FREE_SHIPPING_FROM, GUARANTEE_DAYS, seo, siteUrl, store } from "@/data/site";
+import { FREE_SHIPPING_FROM, GUARANTEE_DAYS, siteUrl } from "@/data/site";
 import type { Product } from "@/data/types";
+import type { Dict } from "@/lib/i18n";
 
 const img = (key: string) => `${photo(key)}?w=1200&q=80&auto=format&fit=crop`;
 const availability = { in: "InStock", low: "LimitedAvailability", out: "OutOfStock" } as const;
@@ -15,7 +13,9 @@ const ids = {
   returns: `${siteUrl}/#returns`,
 };
 
-function productNode(p: Product) {
+function productNode(p: Product, { meta, site, t, lang }: Dict) {
+  const { categories } = meta;
+  const { store } = site;
   const cat = categories.find((c) => c.id === p.categories[0])?.label;
   return {
     "@type": "Product",
@@ -30,12 +30,12 @@ function productNode(p: Product) {
     offers: p.variants.map((v) => ({
       "@type": "Offer",
       sku: `${p.id}-${v.size.toLowerCase()}`,
-      name: `${p.name}, розмір ${v.size} (${v.label})`,
+      name: t.schema.offer(p.name, v.size, v.label),
       price: v.price.toFixed(2),
       priceCurrency: "UAH",
       availability: `https://schema.org/${availability[p.stock]}`,
       itemCondition: "https://schema.org/NewCondition",
-      url: `${siteUrl}/#katalog`,
+      url: `${siteUrl}/${lang}/#katalog`,
       seller: { "@id": ids.store },
       shippingDetails: { "@id": ids.shipping },
       hasMerchantReturnPolicy: { "@id": ids.returns },
@@ -51,20 +51,25 @@ function productNode(p: Product) {
   };
 }
 
-export function homeSchema() {
+export function homeSchema(dict: Dict) {
+  const { content, lang, products, site, t } = dict;
+  const { faq } = content;
+  const { seo, store } = site;
+  const s = t.schema;
+  const home = `${siteUrl}/${lang}/`;
   return {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "WebSite",
         "@id": ids.website,
-        url: `${siteUrl}/`,
-        name: `«${store.name}» — кімнатні рослини`,
-        inLanguage: "uk-UA",
+        url: home,
+        name: s.siteName(store.name),
+        inLanguage: s.inLanguage,
         publisher: { "@id": ids.store },
         potentialAction: {
           "@type": "SearchAction",
-          target: { "@type": "EntryPoint", urlTemplate: `${siteUrl}/?q={search_term_string}#katalog` },
+          target: { "@type": "EntryPoint", urlTemplate: `${home}?q={search_term_string}#katalog` },
           "query-input": "required name=search_term_string",
         },
       },
@@ -74,15 +79,15 @@ export function homeSchema() {
         name: store.name,
         legalName: store.legalName,
         description: seo.description,
-        url: `${siteUrl}/`,
+        url: home,
         logo: `${siteUrl}/icon.svg`,
-        image: `${siteUrl}/opengraph-image`,
+        image: `${siteUrl}/${lang}/opengraph-image`,
         telephone: store.phone.replace(/\s/g, ""),
         email: store.email,
-        priceRange: "160–4290 грн",
+        priceRange: s.priceRange,
         currenciesAccepted: "UAH",
-        paymentAccepted: "Картка, накладений платіж",
-        areaServed: { "@type": "Country", name: "Україна" },
+        paymentAccepted: s.payment,
+        areaServed: { "@type": "Country", name: s.country },
         address: {
           "@type": "PostalAddress",
           streetAddress: store.street,
@@ -129,9 +134,9 @@ export function homeSchema() {
       {
         "@type": "ItemList",
         "@id": `${siteUrl}/#katalog`,
-        name: "Каталог кімнатних рослин, кашпо та засобів догляду",
+        name: s.catalog,
         numberOfItems: products.length,
-        itemListElement: products.map((p, i) => ({ "@type": "ListItem", position: i + 1, item: productNode(p) })),
+        itemListElement: products.map((p, i) => ({ "@type": "ListItem", position: i + 1, item: productNode(p, dict) })),
       },
       {
         "@type": "FAQPage",

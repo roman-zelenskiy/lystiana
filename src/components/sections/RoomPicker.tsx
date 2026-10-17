@@ -1,14 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import { useI18n } from "@/components/I18n";
 import { AnimatePresence, m } from "motion/react";
 import { useMemo, type ReactNode } from "react";
-import { lightHint, lightLabel, rooms } from "@/data/catalog-meta";
 import { photo } from "@/data/photos";
-import { products } from "@/data/products";
 import type { Light, RoomId } from "@/data/types";
 import { matches, sortProducts } from "@/lib/filter";
-import { plural } from "@/lib/format";
 import { defaultFilters, useCatalog } from "@/store/catalog";
 import { Icon } from "@/components/ui/Icon";
 
@@ -64,6 +62,9 @@ const furniture: Record<RoomId, ReactNode> = {
 };
 
 export function RoomPicker() {
+  const { meta, products, t: ui } = useI18n();
+  const { lightHint, lightLabel, rooms } = meta;
+  const t = ui.room;
   const room = useCatalog((s) => s.room);
   const light = useCatalog((s) => s.light);
   const set = useCatalog((s) => s.set);
@@ -80,7 +81,7 @@ export function RoomPicker() {
         ),
         "popular",
       ),
-    [activeRoom, activeLight],
+    [activeRoom, activeLight, products],
   );
 
   // будь-який вибір одразу фільтрує каталог нижче
@@ -93,15 +94,15 @@ export function RoomPicker() {
     <section id="kimnata" aria-labelledby="kimnata-title" className="relative py-20 md:py-28">
       <div className="wrap">
         <div className="rounded-[2.5rem] bg-sage px-5 py-10 md:px-12 md:py-14">
-          <p className="hand -rotate-2 text-2xl text-forest">тест на 10 секунд</p>
+          <p className="hand -rotate-2 text-2xl text-forest">{t.note}</p>
           <h2 id="kimnata-title" className="display mt-1 max-w-3xl text-[clamp(2rem,4.6vw,3.6rem)] text-forest">
-            Яка рослина для твоєї кімнати?
+            {t.title}
           </h2>
 
           <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-start">
             <div className="grid gap-8 lg:pt-6">
               <fieldset>
-                <legend className="mb-3 font-extrabold">1. Де житиме рослина</legend>
+                <legend className="mb-3 font-extrabold">{t.where}</legend>
                 <div className="flex flex-wrap gap-2">
                   {rooms.map((r) => (
                     <label key={r.id} className="chip cursor-pointer text-base">
@@ -114,7 +115,7 @@ export function RoomPicker() {
               </fieldset>
 
               <fieldset>
-                <legend className="mb-3 font-extrabold">2. Скільки там світла</legend>
+                <legend className="mb-3 font-extrabold">{t.light}</legend>
                 <div className="grid grid-cols-3 gap-2">
                   {lights.map((l) => (
                     <label key={l} className="light-card">
@@ -130,7 +131,7 @@ export function RoomPicker() {
 
             {/* Ілюстрація кімнати: світло з вікна і меблі змінюються під вибір */}
             <div className="relative">
-              <svg viewBox="0 0 400 260" className="w-full overflow-visible rounded-[2rem] bg-cream" role="img" aria-label={`Кімната: ${rooms.find((r) => r.id === activeRoom)?.label.toLowerCase()}, світло: ${lightLabel[activeLight].toLowerCase()}`}>
+              <svg viewBox="0 0 400 260" className="w-full overflow-visible rounded-[2rem] bg-cream" role="img" aria-label={t.aria(rooms.find((r) => r.id === activeRoom)?.label ?? "", lightLabel[activeLight])}>
                 <rect x="0" y="240" width="400" height="20" fill="var(--color-paper)" />
                 {/* вікно */}
                 <rect x="34" y="30" width="96" height="120" rx="48" fill={activeLight === "shade" ? "#cfdbe3" : "#ffeebb"} className="transition-colors duration-700" />
@@ -173,9 +174,9 @@ export function RoomPicker() {
 
               <div className="relative -mt-8 ml-auto w-[92%] rounded-[1.75rem] bg-cream p-4 shadow-[var(--shadow-card)] md:p-5">
                 <p className="font-extrabold" aria-live="polite">
-                  Підібрали {picks.length} {plural(picks.length, ["рослину", "рослини", "рослин"])}
+                  {t.found(picks.length)}
                 </p>
-                <ul className="mt-3 flex gap-2" aria-label="Перші з підібраних рослин">
+                <ul className="mt-3 flex gap-2" aria-label={t.firstPicks}>
                   {picks.slice(0, 4).map((p, i) => (
                     <li key={p.id} className={`relative h-14 w-14 overflow-hidden rounded-2xl border-[3px] border-white shadow-[var(--shadow-sticker)] ${i % 2 ? "rotate-3" : "-rotate-3"}`}>
                       <Image src={photo(p.photos[0])} alt={p.name} fill sizes="56px" className="object-cover" />
@@ -183,7 +184,7 @@ export function RoomPicker() {
                   ))}
                 </ul>
                 <a href="#katalog" onClick={() => choose({})} className="btn btn-forest mt-4 w-full">
-                  Показати в каталозі <Icon name="arrow" />
+                  {t.show} <Icon name="arrow" />
                 </a>
               </div>
             </div>

@@ -1,26 +1,29 @@
 import Image from "next/image";
-import { perks } from "@/data/content";
 import { photo } from "@/data/photos";
 import { GUARANTEE_DAYS } from "@/data/site";
+import { getI18n } from "@/lib/i18n-server";
 import { BreezeArea, Sway } from "@/components/motion/Breeze";
 import { BladeLeaves, CoinLeaves, FernFrond, MonsteraLeaf } from "@/components/motion/Leaves";
 import { Icon, type IconName } from "@/components/ui/Icon";
 
 const tilt = ["-rotate-3", "rotate-2", "-rotate-1"];
 
-export function Hero() {
+export async function Hero() {
+  const { content, t: ui } = await getI18n();
+  const { perks } = content;
+  const t = ui.hero;
   return (
     <section id="top" aria-labelledby="hero-title" className="relative overflow-hidden pt-6 pb-16 md:pt-10 md:pb-24">
       <div className="wrap grid items-center gap-x-8 gap-y-10 lg:grid-cols-[1.05fr_1fr]">
         <div className="relative z-10 lg:col-start-1 lg:row-start-1">
           <p className="sticker -rotate-2 bg-butter text-ink">
-            <Icon name="truck" size={18} /> Доставка Новою Поштою по всій Україні
+            <Icon name="truck" size={18} /> {t.sticker}
           </p>
 
           <h1 id="hero-title" className="display mt-6 text-[clamp(2.5rem,6.6vw,5.4rem)] text-forest">
-            Рослини, які виживуть{" "}
+            {t.titleA}{" "}
             <span className="relative inline-block whitespace-nowrap">
-              <span className="relative z-10">навіть у&nbsp;тебе</span>
+              <span className="relative z-10">{t.titleB}</span>
               {/* маркерне підкреслення від руки */}
               <svg
                 className="absolute -bottom-[0.2em] left-0 -z-0 h-[0.3em] w-full"
@@ -34,21 +37,20 @@ export function Hero() {
           </h1>
 
           <p className="mt-6 max-w-xl text-lg text-muted md:text-xl">
-            Купити кімнатні рослини з доставкою — легко: підберемо невибагливі рослини під вашу кімнату, привеземо за 1–3 дні
-            і дамо{" "}
-            <strong className="font-extrabold text-ink">гарантію приживлення {GUARANTEE_DAYS} днів</strong>. Не прижилася —
-            замінимо.
+            {t.leadA}{" "}
+            <strong className="font-extrabold text-ink">{t.leadB(GUARANTEE_DAYS)}</strong>
+            {t.leadC}
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <a href="#katalog" className="btn btn-forest h-14 px-7 text-lg">
-              До каталогу <Icon name="arrow" />
+              {t.shop} <Icon name="arrow" />
             </a>
             <a href="#kimnata" className="btn btn-ghost h-14 px-6">
-              Підібрати під кімнату
+              {t.pick}
             </a>
           </div>
-          <p className="hand mt-4 ml-2 -rotate-2 text-2xl text-coral-deep">↑ навіть якщо забуваєте поливати</p>
+          <p className="hand mt-4 ml-2 -rotate-2 text-2xl text-coral-deep">{t.note}</p>
 
         </div>
 
@@ -62,7 +64,7 @@ export function Hero() {
               <div className="mask-arch relative h-full w-full overflow-hidden border-[6px] border-white bg-paper shadow-[var(--shadow-card)]">
                 <Image
                   src={photo("hero-main")}
-                  alt="Світла вітальня з фікусом ліровидним біля вікна і плетеним кріслом"
+                  alt={t.altMain}
                   fill
                   // без preload: на мобільному колаж нижче тексту і не має конкурувати з ним;
                   // на десктопі браузер сам підніме пріоритет, бо фото в першому екрані
@@ -81,7 +83,7 @@ export function Hero() {
               <div className="mask-leaf relative h-full w-full overflow-hidden bg-paper">
                 <Image
                   src={photo("hero-2")}
-                  alt="Руки тримають горщик із молодою рослиною"
+                  alt={t.alt2}
                   fill
                   sizes="(min-width: 1024px) 230px, 38vw"
                   className="object-cover"
@@ -95,7 +97,7 @@ export function Hero() {
               <div className="mask-pebble relative h-full w-full overflow-hidden border-[5px] border-white shadow-[var(--shadow-card)]">
                 <Image
                   src={photo("hero-3")}
-                  alt="Квітучі рослини на світлому підвіконні"
+                  alt={t.alt3}
                   fill
                   sizes="(min-width: 1024px) 180px, 30vw"
                   className="object-cover"
@@ -119,13 +121,13 @@ export function Hero() {
           </Sway>
 
           <p className="sticker absolute top-[64%] left-[46%] rotate-[8deg] bg-coral text-ink">
-            від 160 грн
+            {t.from}
           </p>
           <p className="hand absolute top-[-1%] right-[0%] max-w-[9rem] rotate-[6deg] text-center text-xl text-forest">
-            Ліза, 3 роки в нашій родині
+            {t.liza}
           </p>
         </BreezeArea>
-        <ul className="relative z-10 grid gap-3 self-start sm:grid-cols-3 lg:col-start-1 lg:row-start-2" aria-label="Наші переваги">
+        <ul className="relative z-10 grid gap-3 self-start sm:grid-cols-3 lg:col-start-1 lg:row-start-2" aria-label={t.perks}>
           {perks.map((p, i) => (
             <li
               key={p.title}

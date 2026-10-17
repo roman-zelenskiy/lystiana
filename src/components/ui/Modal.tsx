@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
+import { useI18n } from "@/components/I18n";
 import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "./Icon";
@@ -30,7 +31,9 @@ let openCount = 0;
  * Фокус тримається всередині, Esc закриває, після закриття фокус повертається туди, звідки відкрили.
  * Решта сторінки отримує inert — недоступна ні мишею, ні клавіатурою, ні скрінрідеру.
  */
-export function Modal({ open, onClose, labelledBy, variant = "center", className = "", children, closeLabel = "Закрити" }: Props) {
+export function Modal({ open, onClose, labelledBy, variant = "center", className = "", children, closeLabel: closeProp }: Props) {
+  const { t } = useI18n();
+  const closeLabel = closeProp ?? t.close;
   const mounted = useSyncExternalStore(noop, () => true, () => false);
   const panel = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();

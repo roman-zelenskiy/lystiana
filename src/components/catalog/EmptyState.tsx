@@ -1,9 +1,11 @@
 "use client";
 
 import { m } from "motion/react";
+import { useI18n } from "@/components/I18n";
 
 /** Порожній результат: горщик зі зніченим паростком, який «підбадьорюється» при наведенні на кнопку */
 export function EmptyState({ onReset }: { onReset: () => void }) {
+  const t = useI18n().t.catalog;
   return (
     <m.div
       initial={{ opacity: 0, y: 16 }}
@@ -20,10 +22,10 @@ export function EmptyState({ onReset }: { onReset: () => void }) {
         <path d="M30 68h60l-7 36a5 5 0 0 1-5 4H42a5 5 0 0 1-5-4l-7-36Z" fill="var(--color-coral)" />
         <rect x="26" y="62" width="68" height="10" rx="5" fill="var(--color-coral-deep)" />
       </svg>
-      <p className="display mt-4 text-2xl text-forest">Тут поки голо, як на підвіконні восени</p>
-      <p className="mt-2 text-muted">За цими умовами нічого не знайшлося. Спробуйте прибрати частину фільтрів.</p>
+      <p className="display mt-4 text-2xl text-forest">{t.emptyTitle}</p>
+      <p className="mt-2 text-muted">{t.emptyText}</p>
       <button type="button" onClick={onReset} className="btn btn-forest mt-6">
-        Скинути фільтри
+        {t.emptyReset}
       </button>
     </m.div>
   );

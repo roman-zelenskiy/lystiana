@@ -2,13 +2,24 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { photo } from "@/data/photos";
+import { langs } from "@/lib/i18n";
 
 export const dynamic = "force-static";
-export const alt = "«Листяна» — кімнатні рослини з доставкою по Україні, гарантія приживлення 14 днів";
+export const alt = "«Листяна» · Lystiana — кімнатні рослини з доставкою по Україні · houseplants delivered across Ukraine";
+
+export function generateStaticParams() {
+  return langs.map((lang) => ({ lang }));
+}
+
+const og = {
+  uk: { name: "Листяна", title: "Рослини, які виживуть навіть у тебе", a: "Гарантія 14 днів", b: "Нова Пошта по Україні" },
+  en: { name: "Lystiana", title: "Plants that will survive even with you", a: "14-day guarantee", b: "Delivery across Ukraine" },
+};
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export default async function OgImage() {
+export default async function OgImage({ params }: { params: Promise<{ lang: string }> }) {
+  const t = og[(await params).lang === "en" ? "en" : "uk"];
   const [dela, nunito] = await Promise.all([
     readFile(join(process.cwd(), "assets/dela-og.ttf")),
     readFile(join(process.cwd(), "assets/nunito-og.ttf")),
@@ -23,17 +34,17 @@ export default async function OgImage() {
         <div style={{ display: "flex", flexDirection: "column", padding: "64px 0 0 72px", width: 640 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <div style={{ width: 44, height: 44, borderRadius: 999, background: "#8db87c" }} />
-            <div style={{ fontFamily: "Dela", fontSize: 36, color: "#1e4a36" }}>Листяна</div>
+            <div style={{ fontFamily: "Dela", fontSize: 36, color: "#1e4a36" }}>{t.name}</div>
           </div>
           <div style={{ fontFamily: "Dela", fontSize: 70, lineHeight: 1.04, color: "#1e4a36", marginTop: 40, display: "flex", flexWrap: "wrap" }}>
-            Рослини, які виживуть навіть у тебе
+            {t.title}
           </div>
           <div style={{ display: "flex", gap: 14, marginTop: 40 }}>
             <div style={{ display: "flex", background: "#ffe08a", border: "4px solid #fff", borderRadius: 999, padding: "10px 22px", fontSize: 26, fontWeight: 700, color: "#1a2b22", transform: "rotate(-3deg)" }}>
-              Гарантія 14 днів
+              {t.a}
             </div>
             <div style={{ display: "flex", background: "#dbe8cf", border: "4px solid #fff", borderRadius: 999, padding: "10px 22px", fontSize: 26, fontWeight: 700, color: "#1e4a36", transform: "rotate(2deg)" }}>
-              Нова Пошта по Україні
+              {t.b}
             </div>
           </div>
         </div>

@@ -1,12 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import type { bundles } from "@/data/content";
+import { useFormat, useI18n } from "@/components/I18n";
 import { m } from "motion/react";
 import { useRef } from "react";
-import { bundles } from "@/data/content";
 import { photo } from "@/data/photos";
-import { productById } from "@/data/products";
-import { formatPrice } from "@/lib/format";
 import { bundleItemId, resolveItem } from "@/lib/items";
 import { useAddToCart } from "@/components/cart/useAddToCart";
 import { Icon } from "@/components/ui/Icon";
@@ -15,15 +14,18 @@ const tints = ["bg-butter", "bg-sage", "bg-[#ffd9cf]"];
 
 /** Набори подані як «рецепт»: інгредієнти через «+», а підсумок — наліпка зі знижкою */
 export function Bundles() {
+  const { content, t: ui } = useI18n();
+  const { bundles } = content;
+  const t = ui.bundles;
   return (
     <section id="nabory" aria-labelledby="nabory-title" className="relative py-20 md:py-28">
       <div className="wrap">
-        <p className="hand -rotate-2 text-2xl text-coral-deep">рецепт зеленого куточка</p>
+        <p className="hand -rotate-2 text-2xl text-coral-deep">{t.note}</p>
         <h2 id="nabory-title" className="display mt-1 max-w-3xl text-[clamp(2.2rem,5vw,4rem)] text-forest">
-          Готові набори: рослина + кашпо + догляд
+          {t.title}
         </h2>
         <p className="mt-4 max-w-2xl text-lg text-muted">
-          Не треба вгадувати, яке кашпо підійде і чим підживлювати. Зібрали комплекти, у яких усе пасує одне до одного, — і зробили їх дешевшими.
+          {t.lead}
         </p>
 
         <ul className="mt-12 grid gap-6 lg:grid-cols-3">
@@ -37,9 +39,13 @@ export function Bundles() {
 }
 
 function BundleCard({ bundle, index }: { bundle: (typeof bundles)[number]; index: number }) {
+  const dict = useI18n();
+  const { productById } = dict;
+  const t = dict.t.bundles;
+  const { formatPrice } = useFormat();
   const media = useRef<HTMLDivElement>(null);
   const addToCart = useAddToCart();
-  const item = resolveItem(bundleItemId(bundle.id), "M")!;
+  const item = resolveItem(bundleItemId(bundle.id), "M", dict)!;
   const save = (item.oldPrice ?? item.price) - item.price;
 
   return (
@@ -86,11 +92,11 @@ function BundleCard({ bundle, index }: { bundle: (typeof bundles)[number]; index
       <div className="mt-auto flex flex-wrap items-end justify-between gap-3 pt-6">
         <p className="leading-none">
           <span className="block text-sm text-muted line-through">
-            <span className="sr-only">Окремо: </span>
+            <span className="sr-only">{t.separately}</span>
             {formatPrice(item.oldPrice ?? 0)}
           </span>
           <span className="display mt-1 block text-3xl whitespace-nowrap text-forest">
-            <span className="sr-only">Ціна набору: </span>= {formatPrice(item.price)}
+            <span className="sr-only">{t.bundlePrice}</span>= {formatPrice(item.price)}
           </span>
         </p>
         <button
@@ -98,7 +104,7 @@ function BundleCard({ bundle, index }: { bundle: (typeof bundles)[number]; index
           className="btn btn-forest"
           onClick={() => addToCart({ id: item.id, size: "M", name: bundle.name, photo: item.photo, from: media.current })}
         >
-          <Icon name="gift" size={20} /> Узяти набір
+          <Icon name="gift" size={20} /> {t.take}
         </button>
       </div>
     </m.li>

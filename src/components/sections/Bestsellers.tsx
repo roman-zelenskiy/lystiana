@@ -1,38 +1,43 @@
 "use client";
 
 import Image from "next/image";
+import { useFormat, useI18n } from "@/components/I18n";
 import { m } from "motion/react";
 import { useRef, useState, type CSSProperties } from "react";
 import { photo } from "@/data/photos";
 import { products } from "@/data/products";
 import type { Product } from "@/data/types";
-import { formatPrice } from "@/lib/format";
 import { useCatalog } from "@/store/catalog";
 import { useAddToCart } from "@/components/cart/useAddToCart";
 import { Icon } from "@/components/ui/Icon";
 import { defaultSize } from "@/components/catalog/ProductCard";
 
-const hits = [...products]
+/** Хіти однакові для обох мов: беремо id, назви — зі словника поточної мови */
+const hitIds = [...products]
   .filter((p) => p.badges.includes("hit") && p.stock !== "out")
   .sort((a, b) => b.popularity - a.popularity)
-  .slice(0, 6);
+  .slice(0, 6)
+  .map((p) => p.id);
 
 /**
  * «Полиця бестселерів»: рослини стоять на дерев’яних полицях, а на кожній висить
  * рукописний цінник на мотузці — він гойдається, як маятник, коли до нього торкаєшся.
  */
 export function Bestsellers() {
+  const { productById, t: ui } = useI18n();
+  const t = ui.best;
+  const hits = hitIds.map((id) => productById.get(id)!);
   return (
     <section id="khity" aria-labelledby="khity-title" className="relative overflow-hidden bg-forest py-20 text-milk md:py-28">
       <div className="wrap">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="hand -rotate-2 text-2xl text-butter">що забирають найчастіше</p>
+            <p className="hand -rotate-2 text-2xl text-butter">{t.note}</p>
             <h2 id="khity-title" className="display mt-1 text-[clamp(2.2rem,5vw,4rem)]">
-              Хіти продажів
+              {t.title}
             </h2>
           </div>
-          <p className="max-w-sm text-milk/80">Рослини, які найчастіше беруть першими — і які найрідше повертають за гарантією.</p>
+          <p className="max-w-sm text-milk/80">{t.lead}</p>
         </div>
 
         <ul className="mt-14 grid grid-cols-2 gap-y-16 lg:grid-cols-3">
@@ -46,6 +51,8 @@ export function Bestsellers() {
 }
 
 function ShelfItem({ product, index }: { product: Product; index: number }) {
+  const { t: ui } = useI18n();
+  const { formatPrice } = useFormat();
   // кожен «поштовх» перезапускає CSS-анімацію маятника: класи swing-a/swing-b чергуються
   const [swings, setSwings] = useState(0);
   const media = useRef<HTMLDivElement>(null);
@@ -88,7 +95,7 @@ function ShelfItem({ product, index }: { product: Product; index: number }) {
           </h3>
           {product.rating && (
             <p className="mt-1 flex items-center gap-1 text-xs font-bold text-muted">
-              <Icon name="star" size={13} fill="currentColor" className="text-[#c98a00]" /> {product.rating.value} · {product.rating.count} відгуків
+              <Icon name="star" size={13} fill="currentColor" className="text-[#c98a00]" /> {product.rating.value} · {ui.card.reviews(product.rating.count)}
             </p>
           )}
           <div className="mt-2 flex items-center justify-between gap-2">
@@ -97,10 +104,10 @@ function ShelfItem({ product, index }: { product: Product; index: number }) {
               type="button"
               onClick={() => {
                 swing();
-                addToCart({ id: product.id, size, name: product.name, sizeLabel: `розмір ${size}`, photo: product.photos[0], from: media.current });
+                addToCart({ id: product.id, size, name: product.name, sizeLabel: ui.card.sizeLabel(size), photo: product.photos[0], from: media.current });
               }}
               className="grid h-11 w-11 place-items-center rounded-full bg-coral text-ink transition-transform duration-300 ease-[var(--ease-bounce)] hover:scale-110 active:scale-90"
-              aria-label={`У кошик: ${product.name}, розмір ${size}, ${formatPrice(v.price)}`}
+              aria-label={ui.card.addAriaPrice(product.name, size, formatPrice(v.price))}
             >
               <Icon name="plus" />
             </button>

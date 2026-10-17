@@ -1,8 +1,8 @@
 "use client";
 
 import { m } from "motion/react";
+import { useFormat, useI18n } from "@/components/I18n";
 import { FREE_SHIPPING_FROM } from "@/data/site";
-import { formatPrice } from "@/lib/format";
 
 const spring = { type: "spring", stiffness: 160, damping: 13 } as const;
 
@@ -11,6 +11,8 @@ const spring = { type: "spring", stiffness: 160, damping: 13 } as const;
  * Стебло росте разом із сумою, на 25/50/75% розгортаються листки, на 100% розквітає квітка.
  */
 export function FreeShippingPlant({ total }: { total: number }) {
+  const t = useI18n().t.ship;
+  const { formatPrice } = useFormat();
   const progress = Math.min(1, total / FREE_SHIPPING_FROM);
   const left = Math.max(0, FREE_SHIPPING_FROM - total);
   const leaf = (at: number) => ({ scale: progress >= at ? 1 : 0, opacity: progress >= at ? 1 : 0 });
@@ -36,20 +38,20 @@ export function FreeShippingPlant({ total }: { total: number }) {
         <p className="font-extrabold">
           {left > 0 ? (
             <>
-              Ще {formatPrice(left)} — і доставка <span className="whitespace-nowrap">безкоштовна</span>
+              {t.leftA(formatPrice(left))} <span className="whitespace-nowrap">{t.leftB}</span>
             </>
           ) : (
-            "Доставка безкоштовна!"
+            t.done
           )}
         </p>
         <div
           className="mt-2 h-2.5 overflow-hidden rounded-full bg-milk"
           role="progressbar"
-          aria-label="До безкоштовної доставки"
+          aria-label={t.aria}
           aria-valuemin={0}
           aria-valuemax={FREE_SHIPPING_FROM}
           aria-valuenow={Math.min(total, FREE_SHIPPING_FROM)}
-          aria-valuetext={left > 0 ? `Залишилось ${formatPrice(left)}` : "Безкоштовна доставка"}
+          aria-valuetext={left > 0 ? t.left(formatPrice(left)) : t.free}
         >
           <m.div className="h-full w-full origin-left rounded-full bg-forest" initial={false} animate={{ scaleX: progress }} transition={spring} />
         </div>

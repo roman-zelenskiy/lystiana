@@ -1,14 +1,18 @@
 "use client";
 
 import { AnimatePresence, m, useMotionValueEvent, useScroll } from "motion/react";
+import { LangSwitch } from "@/components/ui/LangSwitch";
+import { useI18n } from "@/components/I18n";
 import { useState } from "react";
-import { nav } from "@/data/site";
 import { CartButton } from "@/components/cart/CartButton";
 import { Icon } from "@/components/ui/Icon";
 import { Logo } from "@/components/ui/Logo";
 import { SearchBox } from "./SearchBox";
 
 export function Header() {
+  const { site, t: ui } = useI18n();
+  const { nav, store } = site;
+  const t = ui.header;
   const { scrollY } = useScroll();
   const [raised, setRaised] = useState(false);
   const [menu, setMenu] = useState(false);
@@ -27,11 +31,11 @@ export function Header() {
             animate={{ opacity: raised ? 1 : 0, scale: raised ? 1 : 0.97 }}
             transition={{ duration: 0.25 }}
           />
-          <a href="#top" className="shrink-0 rounded-full" aria-label="«Листяна» — на початок сторінки">
-            <Logo />
+          <a href="#top" className="shrink-0 rounded-full" aria-label={t.home}>
+            <Logo name={store.name} />
           </a>
 
-          <nav aria-label="Розділи сторінки" className="hidden flex-1 lg:block">
+          <nav aria-label={t.nav} className="hidden flex-1 lg:block">
             <ul className="flex items-center justify-center gap-1">
               {nav.map((item) => (
                 <li key={item.id}>
@@ -54,7 +58,7 @@ export function Header() {
             <button
               type="button"
               className="grid h-11 w-11 place-items-center rounded-full bg-cream text-forest ring-1 ring-line sm:h-12 sm:w-12 md:hidden"
-              aria-label="Пошук"
+              aria-label={t.search}
               aria-expanded={search}
               aria-controls="mobile-search"
               onClick={() => {
@@ -64,11 +68,12 @@ export function Header() {
             >
               <Icon name={search ? "close" : "search"} />
             </button>
+            <LangSwitch className="hidden sm:grid" />
             <CartButton />
             <button
               type="button"
               className="grid h-11 w-11 place-items-center rounded-full bg-cream text-forest ring-1 ring-line sm:h-12 sm:w-12 lg:hidden"
-              aria-label="Меню"
+              aria-label={t.menu}
               aria-expanded={menu}
               aria-controls="mobile-menu"
               onClick={() => {
@@ -100,7 +105,7 @@ export function Header() {
           {menu && (
             <m.nav
               id="mobile-menu"
-              aria-label="Розділи сторінки"
+              aria-label={t.nav}
               className="mt-2 origin-top rounded-[2rem] bg-cream p-3 shadow-[var(--shadow-card)] ring-1 ring-line lg:hidden"
               initial={{ opacity: 0, scaleY: 0.85, y: -6 }}
               animate={{ opacity: 1, scaleY: 1, y: 0 }}
@@ -121,6 +126,7 @@ export function Header() {
                   </m.li>
                 ))}
               </ul>
+              <LangSwitch className="mt-2 grid w-full sm:hidden" full />
             </m.nav>
           )}
         </AnimatePresence>

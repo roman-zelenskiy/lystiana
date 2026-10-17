@@ -1,13 +1,11 @@
 "use client";
 
 import Image from "next/image";
+import type { Ui } from "@/data/ui";
+import { useFormat, useI18n } from "@/components/I18n";
 import { m, useReducedMotion } from "motion/react";
 import { useRef, useState, useSyncExternalStore } from "react";
-import { reviews } from "@/data/content";
 import { photo } from "@/data/photos";
-import { productById } from "@/data/products";
-import { store } from "@/data/site";
-import { formatNumber } from "@/lib/format";
 import { Icon } from "@/components/ui/Icon";
 
 const fine = "(pointer: fine)";
@@ -18,10 +16,9 @@ const subscribe = (cb: () => void) => {
 };
 
 const baseTilts = [-4, 3, -2, 5, -5, 2];
-const months = ["січня", "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"];
-const formatDate = (iso: string) => {
+const dateIn = (t: Ui["reviews"]) => (iso: string) => {
   const [y, m, d] = iso.split("-").map(Number);
-  return `${d} ${months[m - 1]} ${y}`;
+  return t.date(d, t.months[m - 1], y);
 };
 
 /**
@@ -29,6 +26,12 @@ const formatDate = (iso: string) => {
  * «Перемішати» розкладає їх заново (для клавіатури й дотику — та сама дія кнопкою).
  */
 export function Reviews() {
+  const { content, productById, site, t: ui } = useI18n();
+  const { reviews } = content;
+  const { store } = site;
+  const { formatNumber } = useFormat();
+  const t = ui.reviews;
+  const formatDate = dateIn(t);
   const board = useRef<HTMLUListElement>(null);
   const reduce = useReducedMotion();
   const draggable = useSyncExternalStore(subscribe, () => window.matchMedia(fine).matches, () => false) && !reduce;
@@ -52,9 +55,9 @@ export function Reviews() {
       <div className="wrap">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="hand -rotate-2 text-2xl text-coral-deep">фото від покупців</p>
+            <p className="hand -rotate-2 text-2xl text-coral-deep">{t.note}</p>
             <h2 id="vidguky-title" className="display mt-1 text-[clamp(2.2rem,5vw,4rem)] text-forest">
-              Відгуки покупців
+              {t.title}
             </h2>
             <p className="mt-3 flex items-center gap-2 font-bold">
               <span className="flex text-[#c98a00]" aria-hidden="true">
@@ -62,11 +65,11 @@ export function Reviews() {
                   <Icon key={i} name="star" size={18} fill="currentColor" />
                 ))}
               </span>
-              {store.rating.value} з 5 · {formatNumber(store.rating.count)} відгуків
+              {t.summary(store.rating.value, formatNumber(store.rating.count))}
             </p>
           </div>
           <button type="button" onClick={shuffle} className="btn btn-ghost">
-            <Icon name="sparkle" size={20} /> Перемішати
+            <Icon name="sparkle" size={20} /> {t.shuffle}
           </button>
         </div>
 
@@ -98,7 +101,7 @@ export function Reviews() {
                       {r.name}, {r.city}
                     </span>
                     <span className="flex items-center gap-1 text-sm text-muted">
-                      <span className="flex text-[#c98a00]" role="img" aria-label={`Оцінка ${r.rating} з 5`}>
+                      <span className="flex text-[#c98a00]" role="img" aria-label={t.rate(r.rating)}>
                         {[1, 2, 3, 4, 5].map((n) => (
                           <Icon key={n} name="star" size={14} fill={n <= r.rating ? "currentColor" : "none"} />
                         ))}
@@ -112,7 +115,7 @@ export function Reviews() {
             );
           })}
         </ul>
-        {draggable && <p className="hand mt-8 text-center text-xl text-muted">пс-с… полароїди можна перетягувати</p>}
+        {draggable && <p className="hand mt-8 text-center text-xl text-muted">{t.drag}</p>}
       </div>
     </section>
   );

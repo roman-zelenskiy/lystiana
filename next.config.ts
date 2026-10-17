@@ -7,6 +7,8 @@ const basePath = isStatic ? process.env.BASE_PATH || "" : "";
 const nextConfig: NextConfig = {
   devIndicators: false,
   poweredByHeader: false,
+  // два кореневі layout (/[lang] і корінь вибору мови) → одна глобальна 404
+  experimental: { globalNotFound: true },
   ...(isStatic && { output: "export", trailingSlash: true, basePath }),
   images: {
     // Фото з CDN Unsplash: розмір і формат (AVIF/WebP) підбирає сам CDN — однаково для next start і статики
